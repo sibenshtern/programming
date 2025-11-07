@@ -1,0 +1,47 @@
+@startuml "Диаграмма классов"
+
+class CheckerDialog {
+    +browse_btn: QPushButton
+    +run_btn: QPushButton
+    +cancel_btn: QPushButton
+
+    +browse_file(): None
+}
+
+class EditorWindowUI {
+    +add_block: QPushButton
+    +del_block: QPushButton
+    +copy_block: QPushButton
+    +rename_block: QPushButton
+
+    +add_instance: QPushButton
+    +del_instance: QPushButton
+    +copy_instance: QPushButton
+    +rename_instance: QPushButton
+
+    +add_pin: QPushButton
+    +del_pin: QPushButton
+    +rename_pin: QPushButton
+
+    +add_net: QPushButton
+    +del_net: QPushButton
+    +rename_net: QPushButton
+
+    +btn_redo: QPushButton
+    +btn_undo: QPushButton
+
+    +objects_list: QListWidget
+    +graphics_frame: QWidget
+
+    +tool_info: QLabel
+
+    +__init__(): None
+    +create_toolbar(): None
+    +create_bottom_section(): None
+}
+
+class EditorWindow {
+    
+}
+
+@enduml

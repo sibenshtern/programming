@@ -1,0 +1,10 @@
+[lint]
+
+# 4. Ignore `E402` (import violations) in all `__init__.py` files, and in selected subdirectories.
+[lint.per-file-ignores]
+"__init__.py" = ["E402"]
+"**/{tests,docs,tools}/*" = ["E402"]
+
+[format]
+# 5. Use single quotes in `ruff format`.
+quote-style = "double"
