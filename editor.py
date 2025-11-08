@@ -129,8 +129,7 @@ class Editor(QMainWindow):
         else:
             try:
                 self.controller.save_scene(self.current_file_path)
-                if self.version_manager:
-                    self.version_manager.save_state(f"Save file: {os.path.basename(self.current_file_path)}")
+                self.version_manager.save_state(f"Save file: {os.path.basename(self.current_file_path)}")
                 QMessageBox.information(self, "Success", f"Saved: {self.current_file_path}")
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"Failed to save file: {e}")
@@ -153,8 +152,7 @@ class Editor(QMainWindow):
                     self.controller
                 )
 
-                if self.version_manager:
-                    self.version_manager.save_state(f"Save file: {os.path.basename(file_path)}")
+                self.version_manager.save_state(f"Save file: {os.path.basename(file_path)}")
                 self.setWindowTitle(f"Editor - {file_path}")
                 QMessageBox.information(self, "Success", f"Saved: {file_path}")
             except Exception as e:
@@ -283,8 +281,7 @@ class Editor(QMainWindow):
                 self._show_block_by_index(i)
                 break
 
-        if self.version_manager:
-            self.version_manager.save_state(f"Add block: {name}")
+        self.version_manager.save_state(f"Add block: {name}")
 
     def delete_block(self):
         """Delete the selected block from both models."""
@@ -298,11 +295,10 @@ class Editor(QMainWindow):
             if b.model.name in self.netlist_project.blocks:
                 try:
                     self.netlist_project.remove_block(b.model.name)
-                    if self.version_manager:
-                        self.version_manager.save_state(f"Delete block: {b.model.name}")
                 except Exception as e:
                     QMessageBox.warning(self, "Error", f"Failed to delete block from model: {e}")
             self.controller.delete_block(b)
+            self.version_manager.save_state(f"Delete block: {b.model.name}")
         self.refresh_objects_list()
 
     def copy_block(self):
@@ -349,8 +345,7 @@ class Editor(QMainWindow):
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to copy block: {e}")
 
-        if self.version_manager:
-            self.version_manager.save_state(f"Copy block: {block.model.name} -> {new_name}")
+        self.version_manager.save_state(f"Copy block: {block.model.name} -> {new_name}")
 
     def rename_block(self):
         """Rename the selected block in both models."""
@@ -380,8 +375,7 @@ class Editor(QMainWindow):
             except Exception as e:
                 QMessageBox.warning(self, "Error", f"Failed to rename block: {e}")
 
-        if self.version_manager:
-            self.version_manager.save_state(f"Rename block: {block.model.name} -> {new_name}")
+        self.version_manager.save_state(f"Rename block: {block.model.name} -> {new_name}")
 
     def add_instance(self):
         """Add a new instance to the current block."""
@@ -424,6 +418,7 @@ class Editor(QMainWindow):
                     QMessageBox.warning(self, "Error", f"Failed to add instance to model: {e}")
                 self.refresh_objects_list()
                 self.view.viewport().removeEventFilter(filter_obj)
+                self.version_manager.save_state(f"Add instance: {child_name} to {parent_name}")
                 return True
             return False
 
@@ -435,9 +430,6 @@ class Editor(QMainWindow):
 
         filter_obj = OneShot()
         self.view.viewport().installEventFilter(filter_obj)
-
-        if self.version_manager:
-            self.version_manager.save_state(f"Add instance: {child_name} to {parent_name}")
 
     def delete_instance(self):
         """Delete the selected instance."""
@@ -458,8 +450,7 @@ class Editor(QMainWindow):
                         self.netlist_project.remove_instance_from_block(
                             block_name, inst.model.name
                         )
-                        if self.version_manager:
-                            self.version_manager.save_state(f"Delete instance: {inst.model.name}")
+                        self.version_manager.save_state(f"Delete instance: {inst.model.name}")
                     except Exception as e:
                         QMessageBox.warning(self, "Error", f"Failed to delete instance: {e}")
             self.controller.delete_instance(inst)
@@ -511,8 +502,7 @@ class Editor(QMainWindow):
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to copy instance: {e}")
 
-        if self.version_manager:
-            self.version_manager.save_state(f"Copy instance: {inst.model.name} -> {new_name}")
+        self.version_manager.save_state(f"Copy instance: {inst.model.name} -> {new_name}")
 
     def rename_instance(self):
         """Rename the selected instance in both models."""
@@ -551,8 +541,7 @@ class Editor(QMainWindow):
                 inst.model.name = new_name
                 inst.title.setText(new_name)
 
-                if self.version_manager:
-                    self.version_manager.save_state(f"Rename instance: {old_name} -> {new_name}")
+                self.version_manager.save_state(f"Rename instance: {old_name} -> {new_name}")
 
             except Exception as e:
                 QMessageBox.warning(self, "Error", f"Failed to rename instance: {e}")
@@ -569,8 +558,7 @@ class Editor(QMainWindow):
                 if bf.isVisible() and bf.mapRectToScene(bf.rect()).contains(pos):
                     self._controller_add_block_pin_at_point(bf, pos)
                     self.view.viewport().removeEventFilter(filter_obj)
-                    if self.version_manager:
-                        self.version_manager.save_state(f"Add pin")
+                    self.version_manager.save_state(f"Add pin")
                     return True
             return False
 
@@ -637,8 +625,7 @@ class Editor(QMainWindow):
                             self.netlist_project.remove_pin_from_block(
                                 block_name, pin_name
                             )
-                            if self.version_manager:
-                                self.version_manager.save_state(f"Delete pin: {p.model.name}")
+                            self.version_manager.save_state(f"Delete pin: {p.model.name}")
                         except Exception as e:
                             QMessageBox.warning(self, "Error", f"Failed to delete pin: {e}")
                 self.controller.delete_block_pin(p)
@@ -671,8 +658,7 @@ class Editor(QMainWindow):
                             self.netlist_project.rename_pin_in_block(
                                 block_name, old_name, new_name
                             )
-                        if self.version_manager:
-                            self.version_manager.save_state(f"Rename pin: {old_name} -> {new_name}")
+                        self.version_manager.save_state(f"Rename pin: {old_name} -> {new_name}")
                 # Update graphical model
                 pin.model.name = new_name
                 pin.label.setText(new_name)
@@ -727,8 +713,7 @@ class Editor(QMainWindow):
                     except Exception as e:
                         QMessageBox.warning(self, "Error", f"Failed to add net to model: {e}")
                 self._deactivate_mode()
-                if self.version_manager:
-                    self.version_manager.save_state("Add net")
+                self.version_manager.save_state("Add net")
                 return True
 
         class WireModeFilter(QObject):
@@ -750,8 +735,7 @@ class Editor(QMainWindow):
         for w in wires:
             self.controller.delete_wire(w)
 
-            if self.version_manager:
-                self.version_manager.save_state(f"Delete net")
+            self.version_manager.save_state(f"Delete net")
 
     def rename_net(self):
         """Rename the selected net."""
@@ -792,6 +776,7 @@ class Editor(QMainWindow):
             if wire_item is not None:
                 self.controller.create_junction_at(pos, wire_item)
                 self._deactivate_mode()
+                self.version_manager.save_state("Add junction")
                 return True
 
             return False
@@ -809,8 +794,6 @@ class Editor(QMainWindow):
         self.current_filter = JunctionModeFilter()
         self.view.viewport().installEventFilter(self.current_filter)
 
-        if self.version_manager:
-            self.version_manager.save_state("Add junction")
 
     def delete_junction(self):
         """Delete the selected junction."""
@@ -823,30 +806,23 @@ class Editor(QMainWindow):
             return
         for j in junctions:
             self.controller.delete_junction(j)
-            if self.version_manager:
-                self.version_manager.save_state(f"Delete junction")
+        self.version_manager.save_state(f"Delete junction")
 
     def undo(self):
         """Undo the last action."""
-        if self.version_manager:
-            if self.version_manager.undo():
-                QMessageBox.information(self, "Undo", "Undo successful")
-                self.refresh_objects_list()
-            else:
-                QMessageBox.information(self, "Undo", "No more actions to undo")
+        if self.version_manager.undo():
+            QMessageBox.information(self, "Undo", "Undo successful")
+            self.refresh_objects_list()
         else:
-            QMessageBox.warning(self, "Undo", "Version manager not initialized")
+            QMessageBox.information(self, "Undo", "No more actions to undo")
 
     def redo(self):
         """Redo the last undone action."""
-        if self.version_manager:
-            if self.version_manager.redo():
-                QMessageBox.information(self, "Redo", "Redo successful")
-                self.refresh_objects_list()
-            else:
-                QMessageBox.information(self, "Redo", "No more actions to redo")
+        if self.version_manager.redo():
+            QMessageBox.information(self, "Redo", "Redo successful")
+            self.refresh_objects_list()
         else:
-            QMessageBox.warning(self, "Redo", "Version manager not initialized")
+            QMessageBox.information(self, "Redo", "No more actions to redo")
 
     def _block_name_exists(self, name: str, exclude_id: str = None) -> bool:
         """Check if a block name already exists."""
