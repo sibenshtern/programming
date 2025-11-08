@@ -545,6 +545,8 @@ class Editor(QMainWindow):
                 if bf.isVisible() and bf.mapRectToScene(bf.rect()).contains(pos):
                     self._controller_add_block_pin_at_point(bf, pos)
                     self.view.viewport().removeEventFilter(filter_obj)
+                    if self.version_manager:
+                        self.version_manager.save_state(f"Add pin")
                     return True
             return False
 
@@ -556,9 +558,6 @@ class Editor(QMainWindow):
 
         filter_obj = OneShot()
         self.view.viewport().installEventFilter(filter_obj)
-
-        if self.version_manager:
-            self.version_manager.save_state(f"Add pin")
 
     def _controller_add_block_pin_at_point(self, block_frame: BlockFrame,
                                            scene_pos: QPointF):
@@ -704,6 +703,8 @@ class Editor(QMainWindow):
                     except Exception as e:
                         QMessageBox.warning(self, "Error", f"Failed to add net to model: {e}")
                 self._deactivate_mode()
+                if self.version_manager:
+                    self.version_manager.save_state("Add net")
                 return True
 
         class WireModeFilter(QObject):
@@ -714,10 +715,6 @@ class Editor(QMainWindow):
 
         self.current_filter = WireModeFilter()
         self.view.viewport().installEventFilter(self.current_filter)
-
-        # Сохраняем состояние в менеджере версий
-        if self.version_manager:
-            self.version_manager.save_state("Add net")
 
     def delete_net(self):
         """Delete the selected net (wire)."""
