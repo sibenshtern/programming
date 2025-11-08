@@ -1,5 +1,6 @@
 import sys
 import os
+import subprocess
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QInputDialog, QMessageBox, QVBoxLayout,
                              QFileDialog, QGraphicsScene, QGraphicsView)
 from PyQt6.QtCore import Qt, QPointF, QObject
@@ -43,9 +44,6 @@ class Editor(QMainWindow):
             layout = QVBoxLayout(graphics_widget)
         layout.addWidget(self.view)
 
-        # Initialize version manager
-        self.version_manager = VersionManager(os.path.dirname(__file__) if __file__ else ".", self.controller)
-
         # Mode management
         self.active_mode = None
         self.current_filter = None
@@ -57,11 +55,37 @@ class Editor(QMainWindow):
         
         self.setup_menu_bar()
         self.setup_connections()
-        self.refresh_objects_list()
+
+        project_dir = "."
+        ret = self._load_last_state(project_dir)
+        if not ret:
+            self.refresh_objects_list()
+
+        self.version_manager = VersionManager(project_dir, self.controller)
         
         if self.ui.objects_list.count() > 0:
             self.ui.objects_list.setCurrentRow(0)
             self._show_block_by_index(0)
+
+    def _load_last_state(self, project_dir: str):
+        """Try to load previous session"""
+        project_dir = os.path.join(project_dir, ".gitrepo")
+        try:
+            result = subprocess.run(
+                ["git", "-C", project_dir, "rev-parse", "--git-dir"],
+                capture_output=True,
+                text=True
+            )
+            if result.returncode == 0:
+                project_file = os.path.join(project_dir, "project_state.json")
+                if os.path.exists(project_file):
+                    self.controller.load_scene(project_file)
+                    self.refresh_objects_list()
+                    print("Найдена прошлая версия")
+                    return True
+        except Exception:
+            pass
+        return False
 
     def _create_default_blocks(self):
         """Create default blocks in the object model."""
